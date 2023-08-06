@@ -5,7 +5,7 @@ const { verifyToken } = require("../../utils/verifyToken");
 
 
 
-router.post("/", template1.createTemplate);
+router.post("/:id", template1.createTemplate);
 router.get("/", template1.getAllTemplate);
 // router.get("/", verifyToken, authorization("super_admin"), user.getAllUsers);
 router.put("/:id", template1.updateTemplate);

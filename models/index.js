@@ -5,7 +5,7 @@ const db = require("../db/db");
 const { DataTypes } = require("sequelize");
 
 db.sequelize
-  .sync({ force: false })
+  .sync({ force: true })
   .then(() => {
     console.log("Connection re-synced");
   })
@@ -36,8 +36,20 @@ db.template5 = require("../models/template5/template5")(
   DataTypes
 );
 
-// db.Course.hasMany(db.Intake, { foreignkey: "Course_Id" });
-// db.Intake.belongsTo(db.Course, { foreignkey: "Course_Id" });
+db.user.hasMany(db.template1, { foreignkey: "User_ID" });
+db.template1.belongsTo(db.user, { foreignkey: "User_ID" });
+
+db.user.hasMany(db.template2, { foreignkey: "User_ID" });
+db.template2.belongsTo(db.user, { foreignkey: "User_ID" });
+
+db.user.hasMany(db.template3, { foreignkey: "User_ID" });
+db.template3.belongsTo(db.user, { foreignkey: "User_ID" });
+
+db.user.hasMany(db.template4, { foreignkey: "User_Id" });
+db.template4.belongsTo(db.user, { foreignkey: "User_Id" });
+
+db.user.hasMany(db.template5, { foreignkey: "User_Id" });
+db.template5.belongsTo(db.user, { foreignkey: "User_Id" });
 
 // db.Teacher.hasMany(db.Intake, { foreignkey: "Teacher_Id" });
 // db.Intake.belongsTo(db.Teacher, { foreignkey: "Teacher_Id" });
