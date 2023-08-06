@@ -15,23 +15,6 @@ const shortid = require("shortid");
 // middlewares
 app.use(cors({ origin: true, credentials: true }));
 
-// const swaggerOptions = {
-//   swaggerDefinition:{
-//     info:{
-//       title: 'Customer API',
-//       description: 'Customer API Information',
-//       contact: {
-//         name:"Amazing Developer"
-//       },
-//       servers:["http://localhost:5000"]
-//     }
-//     ,apis:['./routes/index.js']
-//   }
-// };
-
-// const swaggerDocs = swaggerJSDoc(swaggerOptions);
-// app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerDocs));
-
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1", routes);
