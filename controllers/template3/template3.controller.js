@@ -9,68 +9,54 @@ const Template = db.template3;
 
 exports.createTemplate = async (req, res) => {
   try {
-    const Template = await Template.create(req.body);
-    // console.log("data save on database", user);
-    res.status(200).send({
-      status: "Success",
-      message: "Successfully create template",
-      data: Template,
-    });
-
-    // console.log('UserId', user.User_ID)
-  } catch (error) {
-    ErrorLogger.error(req.originalUrl + " " + error.message);
-
-    res.status(500).json({
-      status: "fail",
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
-};
-exports.getAllTemplate = async (req, res) => {
-  try {
-    const Template = await Template.findAll();
-    // console.log("data save on database", user);
-    res.status(200).send({
-      status: "Success",
-      message: "Successfully got all template",
-      data: Template,
-    });
-
-    // console.log('UserId', user.User_ID)
-  } catch (error) {
-    ErrorLogger.error(req.originalUrl + " " + error.message);
-
-    res.status(500).json({
-      status: "fail",
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
-};
-
-exports.updateTemplate = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const [lines1, setLines1] = useState("");
-    const [lines2, setLines2] = useState("");
-    const [lines3, setLines3] = useState("");
-    const [lines4, setLines4] = useState("");
-    const [lines5, setLines5] = useState("");
-    const [lines6, setLines6] = useState("");
-    const [lines7, setLines7] = useState("");
-    const [lines8, setLines8] = useState("");
-    const [lines9, setLines9] = useState("");
-    const [lines10, setLines10] = useState("");
-    const [lines11, setLines11] = useState("");
-    const [lines12, setLines12] = useState("");
-    const [lines13, setLines13] = useState("");
-    const [lines14, setLines14] = useState("");
-    const [lines15, setLines15] = useState("");
-    const [lines16, setLines16] = useState("");
-
+    console.log("createTemplate", req.body);
+    const {
+      initial,
+      father,
+      mother,
+      chussan,
+      date,
+      year,
+      kallah,
+      reception,
+      chupah,
+      dinner,
+      dancing,
+      hall,
+      address,
+      city,
+      chussan1,
+      chussan2,
+      chussan3,
+      chussan4,
+      chussan5,
+      chussan6,
+      grandparent1,
+      grandparent2,
+      grandparent3,
+      grandparent4,
+      grandparent5,
+      grandparent6,
+      lines1,
+      lines2,
+      lines3,
+      lines4,
+      lines5,
+      lines6,
+      lines7,
+      lines8,
+      lines9,
+      lines10,
+      lines11,
+      lines12,
+      lines13,
+      lines14,
+      lines15,
+      lines16,
+      lines17,
+      lines18,
+      lines19,
+    } = req.body;
     const data = {
       text1: initial,
       text2: father,
@@ -118,13 +104,35 @@ exports.updateTemplate = async (req, res) => {
       text44: lines18,
       text45: lines19,
     };
-    const Template = await Template.update(data, {
+    const result = await Template.create(data);
+    // console.log("data save on database", user);
+    res.status(200).send({
+      status: "Success",
+      message: "Successfully create template",
+      data: result,
+    });
+
+    // console.log('UserId', user.User_ID)
+  } catch (error) {
+    ErrorLogger.error(req.originalUrl + " " + error.message);
+
+    res.status(500).json({
+      status: "fail",
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+exports.getSingleTemplate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const Template = await Template.findOne({
       where: { id: id },
     });
     // console.log("data save on database", user);
     res.status(200).send({
       status: "Success",
-      message: "Successfully got all template",
+      message: "Successfully got single template",
       data: Template,
     });
 
@@ -139,3 +147,5 @@ exports.updateTemplate = async (req, res) => {
     });
   }
 };
+
+
