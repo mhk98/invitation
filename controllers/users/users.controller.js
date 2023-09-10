@@ -1,34 +1,27 @@
-// const { createResponse } = require("../../utils/responseGenerator");
 const db = require("../../models");
 const bcrypt = require("bcryptjs");
 const { generateToken } = require("../../utils/jwt_token");
+const jwt = require("jsonwebtoken");
 const { ErrorLogger } = require("../../utils/logger");
 const User = db.user;
 
-// console.log(User)
-
 exports.signup = async (req, res) => {
   try {
-    // const users = req.body;
-    // console.log(req.body);
+    //Checking exist user
+    const isUserExist = await User.findOne({
+      where: { Email: req.body.Email },
+    });
 
-    // const userCheck = await User.findOne({
-    //   where: { Email: req.body.Email },
-    // });
-
-    // if (userCheck.Email == req.body.Email) {
-    //   return res.status(409).send("User exist");
-    // }
+    if (isUserExist) {
+      return res.status(409).send("User already exist");
+    }
 
     const user = await User.create(req.body);
-    // console.log("data save on database", user);
     res.status(200).send({
       status: "Success",
       message: "Successfully signed up",
       data: user,
     });
-
-    // console.log('UserId', user.User_ID)
   } catch (error) {
     ErrorLogger.error(req.originalUrl + " " + error.message);
 
@@ -42,16 +35,18 @@ exports.signup = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    // const users = req.body;
-    console.log(req.body);
+    //checking refresh token from cookies
+    // console.log("cookie", req.cookies);
     const user = await User.findAll();
-    // console.log('data save on database', user)
+
     res.status(200).send({
       status: "Success",
       message: "This is your all data",
       data: user,
     });
   } catch (error) {
+    ErrorLogger.error(req.originalUrl + " " + error.message);
+
     res.status(500).json({
       status: "fail",
       message: "No data found",
@@ -63,7 +58,7 @@ exports.getSingleUser = async (req, res) => {
   try {
     const { id } = req.params;
     // const users = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     const user = await User.findOne({
       where: { User_ID: id },
     });
@@ -80,6 +75,8 @@ exports.getSingleUser = async (req, res) => {
       data: user,
     });
   } catch (error) {
+    ErrorLogger.error(req.originalUrl + " " + error.message);
+
     res.status(500).json({
       status: "fail",
       message: "User not found",
@@ -88,21 +85,10 @@ exports.getSingleUser = async (req, res) => {
   }
 };
 
-/**
- * 1. Check if Email and password are given
- * 2. Load user with email
- * 3. if not user send res
- * 4. compare password
- * 5. if password not correct send res
- * 6. check if user is active
- * 7. if not active send res
- * 8. generate token
- * 9. send user and token
- */
 exports.login = async (req, res) => {
   try {
     const { Email, Password } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     if (!Email || !Password) {
       res.status(401).json({
@@ -120,9 +106,6 @@ exports.login = async (req, res) => {
     }
 
     const isPasswordValid = bcrypt.compareSync(Password, user.Password);
-    // const isPasswordValid = user.compareSync(Password, user.Password);
-    // console.log(user.Password, Password)
-    console.log("isPasswordValid", isPasswordValid);
 
     if (!isPasswordValid) {
       return res.status(403).json({
@@ -131,43 +114,81 @@ exports.login = async (req, res) => {
       });
     }
 
-    // if (user.status != "active") {
-    //   return res.status(401).json({
-    //     status: "fail",
-    //     error: "Your account is not active yet",
-    //   });
-    // }
+    const accessToken = generateToken(user);
+    const refreshToken = generateToken(user);
 
-    const token = generateToken(user);
-    // const { Password: pwd, ...others } = user.toObject();
-
-    // const cookieOptions = {
-    //   // httpOnly: true,
-    //   secure: true,
-    //   maxAge: 28800000,
-    // };
-
-    // res.cookie("token", token, cookieOptions).status(200).send({
-    //   status: "Success",
-    //   message: "Logged in successfully",
-    //   data: {
-    //     user,
-    //   },
-    // });
+    //set refresh token into cookie
+    const cookieOptions = {
+      secure: process.env === "production" ? true : false,
+      httpOnly: true,
+    };
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+    res.cookie("accessToken", accessToken, cookieOptions);
 
     res.status(200).send({
       status: "Success",
       message: "Logged in successfully",
-
-      data: {
-        user,
-        token,
-      },
+      
     });
   } catch (error) {
+    ErrorLogger.error(req.originalUrl + " " + error.message);
     res.status(500).json({
       status: "fail",
       message: "Username or password is not curret",
+      error: error.message,
+    });
+  }
+};
+exports.refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+
+    let verifiedToken = null;
+
+    //refresh token verify
+    try {
+      verifiedToken = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+    } catch (err) {
+      return res.send("Invalid refresh token");
+    }
+
+    const { Email, role } = verifiedToken;
+
+    //Check delete user refresh token
+    const isUserExist = await User.findOne({
+      where: { Email: Email },
+    });
+
+    if (!isUserExist) {
+      return res.send("User does not exist");
+    }
+
+    //Generate new token
+    const newAccessToken = jwt.sign(
+      { Email: Email, role: role },
+      process.env.REFRESH_SECRET,
+      {
+        expiresIn: "365d",
+      }
+    );
+
+    //set refresh token into cookie
+    const cookieOptions = {
+      secure: process.env === "production" ? true : false,
+      httpOnly: true,
+    };
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    res.status(200).send({
+      status: "Success",
+      message: "Logged in successfully",
+      accessToken: newAccessToken,
+    });
+  } catch (error) {
+    ErrorLogger.error(req.originalUrl + " " + error.message);
+    res.status(500).json({
+      status: "fail",
+      message: "Something went wrong",
       error: error.message,
     });
   }

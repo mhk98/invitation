@@ -2,21 +2,19 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const routes = require("./routes");
-const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-// const { notFoundHandler, errorHandler } = require("./middlewares/error");
-// const { createResponse } = require("././utils/responseGenerator");
+
 require("./models");
 require("dotenv").config();
 const shortid = require("shortid");
-// const swaggerJSDoc = require("swagger-jsdoc");
-// const recharge = require('./models/recharge/recharge');
+const cookieParser = require("cookie-parser");
 
 // middlewares
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors());
+app.use(cookieParser());
 
 app.use(express.json());
-app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1", routes);
 
 // port initializing
@@ -33,8 +31,10 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-// error handler
-// app.use([notFoundHandler, errorHandler]);
+//catch-all middleware for "not found" routes
+app.use((req, res) => {
+  res.status(404).send("Route not found");
+});
 
 // listening server
 app.listen(port, () =>

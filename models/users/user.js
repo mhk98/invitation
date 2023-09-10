@@ -12,14 +12,11 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
         allowNull: true,
       },
 
-      First_Name: {
+      Name: {
         type: DataTypes.STRING(30),
         allowNull: false,
       },
-      Last_Name: {
-        type: DataTypes.STRING(30),
-        allowNull: false,
-      },
+
       Email: {
         type: DataTypes.STRING(64),
         allowNull: false,
@@ -32,13 +29,32 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
         unique: true,
       },
 
+      Phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      Address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      Profession: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      Favorite_colors: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      // Define a 'role' field with default value 'user' and enum values ['user', 'admin']
       role: {
         type: DataTypes.STRING,
         defaultValue: "user",
-        enum: ["user", "admin", "super_admin"],
+        enum: ["user", "admin"],
       },
     },
 
+    // Define hooks to perform actions before creating a user
     {
       hooks: {
         beforeCreate: async (user) => {
@@ -50,6 +66,8 @@ module.exports = (sequelize, DataTypes, Sequelize) => {
       },
     }
   );
+
+  // Define custom methods for validating and hashing passwords
   usertbls.prototype.validPassword = async (Password, hash) => {
     return await bcrypt.compareSync(Password, hash);
   };
